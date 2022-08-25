@@ -1,0 +1,14 @@
+def build(bld):
+    obj = bld.create_ns3_module('temp', ['core','network','internet'])
+    obj.source = [
+        'model/TimestampTag.cc',
+        'model/Mytag.cc',
+        ]
+    headers = bld(features='ns3header')
+    headers.module = 'temp'
+    headers.source = [
+        'model/TimestampTag.h',
+        'model/Mytag.h',
+        ]
+
+
