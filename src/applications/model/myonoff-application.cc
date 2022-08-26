@@ -189,41 +189,27 @@ void MyOnOffApplication::StartApplication () // Called at time specified by Star
   NS_LOG_FUNCTION (this);
 
   vector<double> packetsize;
-  ifstream inFile("/home/mfy/Desktop/packets.csv", ios::in);
+  ifstream inFile("/home/lab1112/ns3/ns-allinone-3.33/ns-3.33/src/applications/model/packets.csv", ios::in);
 	string lineStr;
 	while (getline(inFile, lineStr))
 	{
-		// 打印整行字符串
-		//cout << lineStr << endl;
-		// 存成二维表结构
 		stringstream ss(lineStr);
 		string str;
-		// 按照逗号分隔
 		while (getline(ss, str, ',')){
 			packetsize.push_back(stod(str));}
-      
 	}
   m_pakvec=packetsize;
   vector<double> packettime;
-  ifstream inFile2("/home/mfy/Desktop/times.csv", ios::in);
+  ifstream inFile2("/home/lab1112/ns3/ns-allinone-3.33/ns-3.33/src/applications/model/times.csv", ios::in);
 	string lineStr2;
 	while (getline(inFile2, lineStr2))
 	{
-		// 打印整行字符串
-		//cout << lineStr << endl;
-		// 存成二维表结构
 		stringstream ss(lineStr2);
 		string str;
-		// 按照逗号分隔
 		while (getline(ss, str, ',')){
-      
 			packettime.push_back(3+stod(str)/1000000);}
 	}
   m_timevec=packettime;
-  
-   //std::cout << "startend " <<  std::endl;
-
-  // Create the socket if not already
   if (!m_socket)
     {
       m_socket = Socket::CreateSocket (GetNode (), m_tid);
@@ -344,9 +330,6 @@ void MyOnOffApplication::ScheduleNextTx ()
       
       m_sendEvent = Simulator::Schedule (nextTime,
                                          &MyOnOffApplication::SendPacket, this);
-      //std::cout << "nowbyte: " << m_totBytes << "maxbyte"<< m_maxBytes<< std::endl;
-      
-    
     }
   else
     { // All done, cancel any pending events
@@ -362,23 +345,23 @@ void MyOnOffApplication::ScheduleStartEvent ()
   NS_LOG_FUNCTION (this);
   Time now = Simulator::Now();
   Time nexttime=Seconds (m_timevec.front());
+  /* if the datarate is low,it costs to much time to send packets so the time will be larger than the data*/
   while (nexttime<=now)
   {
   vector<double>::iterator k = m_timevec.begin();
-  m_timevec.erase(k);//删除第一个元素
+  m_timevec.erase(k);
   nexttime=Seconds (m_timevec.front());
   vector<double>::iterator j = m_pakvec.begin();
-  m_pakvec.erase(j);//删除第一个元素
+  m_pakvec.erase(j);
   }
   Time offInterval=nexttime-now;
   uint64_t maxbytes = int(m_pakvec.front());
   MyOnOffApplication::SetMaxBytes(maxbytes);
+  /*Big size,tag =1;small size,tag = 0*/
   if(m_maxBytes>m_threshold){
     MyOnOffApplication::SetTagvalue(1);
   }
   else{MyOnOffApplication::SetTagvalue(0);}
-  
- 
   NS_LOG_LOGIC ("start at " << offInterval.As (Time::S));
   
   if (m_timevec.size()==1)
@@ -386,8 +369,6 @@ void MyOnOffApplication::ScheduleStartEvent ()
     MyOnOffApplication::StopApplication();
   }
   else{
-  //double delay = offInterval.ToDouble(Time::MS);
-  //std::cout << "startsend: " << delay <<  std::endl;
   m_startStopEvent = Simulator::Schedule (offInterval, &MyOnOffApplication::StartSending, this);}
 }
 
@@ -479,8 +460,6 @@ void MyOnOffApplication::SendPacket ()
   m_residualBits = 0;
   m_lastStartTime = Simulator::Now ();
   ScheduleNextTx ();
-
-  //std::cout << "sendpacket " <<  std::endl;
 }
 
 

@@ -2,6 +2,8 @@ import os
 from readline import append_history_file
 import matplotlib.pyplot as plt
 import numpy as np
+
+#Read data from datfile,return VI Ddelay#
 def readfile(pathname):
   f=open(pathname)
   VIdelay = []
@@ -56,6 +58,8 @@ def readfile(pathname):
       except ValueError:
           pass
   return y
+
+#Get the cdf of the delay
 def getcdf(y):
   hist, bin_edges = np.histogram(y,bins=1000)
   cdf = np.cumsum(hist/sum(hist))
@@ -81,17 +85,13 @@ plt.ylabel("delay(ms)")
 [cdf4,edge4]=getcdf(y4)
 [cdf5,edge5]=getcdf(y5)
 [cdf51,edge51]=getcdf(y51)
-#[cdf11,edge11]=getcdf(y11)
-#print(edge11)
+
 plt.subplot(1,2,2)
 plt.plot(edge1,cdf1,label='MCS = 3')
-#plt.plot(edge11,cdf11,color='r',label='VI num=1(policy)')
-
 plt.plot(edge2,cdf2,color='y',label='MCS = 4')
 plt.plot(edge3,cdf3,color='g',label='MCS = 5')
 plt.plot(edge4,cdf4,color='r',label='MCS = 6')
 plt.plot(edge5,cdf5,color='m',label='MCS = 8')
-#plt.plot(edge51,cdf51,color='b',label='VI num=5(policy 1)')
 plt.xlim(0,40)
 plt.title("CDF")
 plt.legend()

@@ -53,18 +53,19 @@ using namespace std;
 
 NS_LOG_COMPONENT_DEFINE ("controlpolicy");
 
-
+/*This is the CW size we want to change*/
 uint32_t CWmin0=1;
 uint32_t CWmax0=1;
 uint32_t aifs0=1;
 
+/*This is the default CW size*/
 uint32_t CWmin1=7;
 uint32_t CWmax1=15;
 uint32_t aifs1=2;
 vector<float> received;
 float send;
 
-
+/*Calculate the delay of different AC*/ 
 static void
 CalculateDelayVO (Ptr<const Packet>p,const Address &address)
 {
@@ -83,21 +84,6 @@ CalculateDelayVI (Ptr<const Packet>p,const Address &address)
   p->FindFirstMatchingByteTag (timestamp);
   Time tx = timestamp.GetTimestamp();
   Time txdelay = Simulator::Now() - tx;
-   /*Ptr<Packet> copy = p->Copy();
-
-    // Headers must be removed in the order they're present.
-    PppHeader pppHeader;
-    copy->RemoveHeader(pppHeader);
-    Ipv4Header ipHeader;
-    copy->RemoveHeader(ipHeader);
-
-    std::cout << "Source IP: ";
-    ipHeader.GetSource().Print(std::cout);
-    std::cout << std::endl;
-
-    std::cout << "Destination IP: ";
-    ipHeader.GetDestination().Print(std::cout);
-    std::cout << std::endl;*/
   double delay = txdelay.ToDouble(Time::MS);
   std::cout << "VIdelay: \t" << delay << std::endl;
 }
@@ -129,7 +115,7 @@ CalculateDelayBK (Ptr<const Packet>p,const Address &address)
 
 }
 
-
+/*In policy 2,change cw for every node depending on tagvalue*/ 
 void MacTxCallback0(std::string context,Ptr<const Packet> packet){
   MyTag tag;
   packet->FindFirstMatchingByteTag (tag);
@@ -204,12 +190,8 @@ void MacTxCallback4(std::string context,Ptr<const Packet> packet){
   Config::Set ("/NodeList/4/DeviceList/*/$ns3::WifiNetDevice/Mac/$ns3::RegularWifiMac/VI_Txop/MaxCw",  UintegerValue (CWmax0));
  }
 }
-/*static void
-TxCallback(Ptr<const Packet>p)
-{
-  std::cout << Simulator::Now().GetSeconds()<<" "<<p->GetSize() << std::endl;
-}*/
 
+/*In policy 1,change cw depending on the time in the channel*/
 void
 cwcontrol(float send)
 { 
@@ -240,13 +222,15 @@ TxcontrolCallback(Ptr<const Packet>p)
   Simulator::Schedule(Seconds(0.0025), &cwcontrol,send);
 }
 
-
-
 void
 RxCallback(Ptr<const Packet>p)
 {
   received.push_back(p->GetUid());
 }
+
+
+
+
 
 int main (int argc, char *argv[])
 { 
@@ -308,17 +292,19 @@ int main (int argc, char *argv[])
   }
   WifiMacHelper mac;
   
-
   NetDeviceContainer staDevices,apDevice;
   Ssid ssid;
 
   //Network A
   ssid = Ssid ("network-A");
+  /*"SCS=2"*/
   phy.Set ("Antennas", UintegerValue (2));
   phy.Set ("MaxSupportedTxSpatialStreams", UintegerValue (2));
   phy.Set ("MaxSupportedRxSpatialStreams", UintegerValue (2));
   phy.Set ("ChannelWidth",UintegerValue (20));
   phy.Set("Frequency",UintegerValue (5180));
+
+  /*Qossupport for mac*/
   mac.SetType ("ns3::StaWifiMac",
                "QosSupported", BooleanValue (true),
                "Ssid", SsidValue (ssid));
@@ -367,35 +353,34 @@ int main (int argc, char *argv[])
   uint32_t portVI = 10;
   uint32_t portBE = 11;
   uint32_t portBK = 12;
-  Address sinkLocalAddress (InetSocketAddress (Ipv4Address::GetAny (), portVO));//在port上监听来自所有ip来的包
+  Address sinkLocalAddress (InetSocketAddress (Ipv4Address::GetAny (), portVO));//listen packet from all ip
   PacketSinkHelper sinkHelper ("ns3::TcpSocketFactory", sinkLocalAddress);
   ApplicationContainer serverVO = sinkHelper.Install (wifiApNode);
   serverVO.Start (Seconds (0.0));
   serverVO.Stop (Seconds (simulationTime + 1));
 
 
-  Address sinkLocalAddress2 (InetSocketAddress (Ipv4Address::GetAny (), portVI));//在port上监听来自所有ip来的包
+  Address sinkLocalAddress2 (InetSocketAddress (Ipv4Address::GetAny (), portVI));
   PacketSinkHelper sinkHelper2 ("ns3::TcpSocketFactory", sinkLocalAddress2);
   ApplicationContainer serverVI= sinkHelper2.Install (wifiApNode);
   serverVI.Start (Seconds (0.0));
   serverVI.Stop (Seconds (simulationTime + 1));
   
   
-  Address sinkLocalAddress3 (InetSocketAddress (Ipv4Address::GetAny (), portBE));//在port上监听来自所有ip来的包
+  Address sinkLocalAddress3 (InetSocketAddress (Ipv4Address::GetAny (), portBE));
   PacketSinkHelper sinkHelper3 ("ns3::TcpSocketFactory", sinkLocalAddress3);
   ApplicationContainer serverBE = sinkHelper3.Install (wifiApNode);
   serverBE.Start (Seconds (0.0));
   serverBE.Stop (Seconds (simulationTime + 1));
 
-  Address sinkLocalAddress4 (InetSocketAddress (Ipv4Address::GetAny (), portBK));//在port上监听来自所有ip来的包
+  Address sinkLocalAddress4 (InetSocketAddress (Ipv4Address::GetAny (), portBK));
   PacketSinkHelper sinkHelper4 ("ns3::TcpSocketFactory", sinkLocalAddress4);
   ApplicationContainer serverBK = sinkHelper4.Install (wifiApNode);
   serverBK.Start (Seconds (0.0));
   serverBK.Stop (Seconds (simulationTime + 1));
-   
+  /*Calculate dalay for each AC*/
   serverVO.Get(0)->TraceConnectWithoutContext("Rx", MakeCallback(&CalculateDelayVO));
   serverVI.Get(0)->TraceConnectWithoutContext("Rx", MakeCallback(&CalculateDelayVI));
-
   serverBE.Get(0)->TraceConnectWithoutContext("Rx", MakeCallback(&CalculateDelayBE));
   serverBK.Get(0)->TraceConnectWithoutContext("Rx", MakeCallback(&CalculateDelayBK));
 
@@ -417,27 +402,18 @@ int main (int argc, char *argv[])
   onOffHelperVO.SetAttribute ("OffTime",  StringValue ("ns3::ConstantRandomVariable[Constant=0.02]"));
   onOffHelperVO.SetAttribute ("DataRate", DataRateValue (datarate_VO)); //64kbps voice
   onOffHelperVO.SetAttribute ("PacketSize", UintegerValue (80)); //80 bytes packet
-  //application1.Add (onOffHelperVO.Install (wifiStaNodes.Get (6)));
-  //application1.Add (onOffHelperVO.Install (wifiStaNodes.Get (1)));
-  //application1.Add (onOffHelperVO.Install (wifiStaNodes.Get (2)));
-  //application1.Add (onOffHelperVO.Install (wifiStaNodes.Get (3)));
   application1.Start(Seconds (3.0));
   application1.Stop(Seconds (50.0));
   
+  /*OnOff application*/
   OnOffHelper onOffHelperVI ("ns3::TcpSocketFactory", sinkSocketVI);
   onOffHelperVI.SetAttribute ("OnTime",  StringValue ("ns3::ConstantRandomVariable[Constant=1]"));
-  onOffHelperVI.SetAttribute ("OffTime",  StringValue ("ns3::ConstantRandomVariable[Constant=0.5]"));
+  onOffHelperVI.SetAttribute ("OffTime",  StringValue ("ns3::ConstantRandomVariable[Constant=0]"));
   onOffHelperVI.SetAttribute ("DataRate", DataRateValue (datarate_VI)); //64kbps voice
   onOffHelperVI.SetAttribute ("PacketSize", UintegerValue (1500)); //1500 bytes packe
-  //application2.Add (onOffHelperVI.Install (wifiStaNodes.Get (5)));
-  //application2.Add (onOffHelperVO.Install (wifiStaNodes.Get (3)));
-  //application2.Add (onOffHelperVO.Install (wifiStaNodes.Get (4)));
-  //application2.Start(Seconds (1.0));
-  //application2.Stop(Seconds (10.0));
 
+  /*MyOnOff application*/
   MyOnOffHelper myonOffHelperVI ("ns3::TcpSocketFactory", sinkSocketVI);
-  //myonOffHelperVI.SetAttribute ("OnTime",  StringValue ("ns3::ConstantRandomVariable[Constant=1]"));
-  //myonOffHelperVI.SetAttribute ("OffTime",  StringValue ("ns3::ConstantRandomVariable[Constant=0]"));
   myonOffHelperVI.SetAttribute ("DataRate", DataRateValue (datarate_VI)); 
   myonOffHelperVI.SetAttribute ("PacketSize", UintegerValue (1500)); 
   myonOffHelperVI.SetAttribute("Threshold",UintegerValue(packetThreshold ));
@@ -449,20 +425,17 @@ int main (int argc, char *argv[])
   
   OnOffHelper onOffHelperBE ("ns3::TcpSocketFactory", sinkSocketBE);
   onOffHelperBE.SetAttribute ("OnTime",  StringValue ("ns3::ConstantRandomVariable[Constant=1]"));
-  onOffHelperBE.SetAttribute ("OffTime",  StringValue ("ns3::ConstantRandomVariable[Constant=0.02]"));
+  onOffHelperBE.SetAttribute ("OffTime",  StringValue ("ns3::ConstantRandomVariable[Constant=0]"));
   onOffHelperBE.SetAttribute ("DataRate", DataRateValue (datarate_BE));
   onOffHelperBE.SetAttribute ("PacketSize", UintegerValue (1500)); //bytes
-  //application3.Add (onOffHelperBE.Install (wifiStaNodes.Get (4)));
-  //application3.Add (onOffHelperVO.Install (wifiStaNodes.Get (6)));
   application3.Start(Seconds (3.0));
   application3.Stop(Seconds (50.0));
     
   OnOffHelper onOffHelperBK ("ns3::TcpSocketFactory", sinkSocketBK);
   onOffHelperBK.SetAttribute ("OnTime",  StringValue ("ns3::ConstantRandomVariable[Constant=1]"));
-  onOffHelperBK.SetAttribute ("OffTime",  StringValue ("ns3::ConstantRandomVariable[Constant=0.0001]"));
+  onOffHelperBK.SetAttribute ("OffTime",  StringValue ("ns3::ConstantRandomVariable[Constant=0]"));
   onOffHelperBK.SetAttribute ("DataRate", DataRateValue (datarate_BK));
-  onOffHelperBK.SetAttribute ("PacketSize", UintegerValue (1472)); //bytes
-  
+  onOffHelperBK.SetAttribute ("PacketSize", UintegerValue (1472)); 
   for (uint8_t index = 0; index < 5; ++index){
   application4.Add (onOffHelperBK.Install (wifiStaNodes.Get (index)));
    }
@@ -471,7 +444,7 @@ int main (int argc, char *argv[])
   application4.Stop(Seconds (50.0));
 
   
-
+  /*Using polict*/
   if (policy ==1){
   Config::ConnectWithoutContext("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Mac/MacRx",MakeCallback(&RxCallback));
   application2.Get(0)->TraceConnectWithoutContext("Tx", MakeCallback(&TxcontrolCallback));}
@@ -488,7 +461,7 @@ int main (int argc, char *argv[])
     m_cam.Setusepolicy();
   }
 
-
+  /*If necessary,you can show the cw window by this way*/
   /*Ptr<NetDevice> dev = wifiStaNodes.Get (0)->GetDevice (0);
   Ptr<WifiNetDevice> wifi_dev = DynamicCast<WifiNetDevice> (dev);
   Ptr<WifiMac> wifi_mac = wifi_dev->GetMac ();
@@ -511,44 +484,8 @@ int main (int argc, char *argv[])
   edca = ptr.Get<QosTxop> ();
   cwmax=edca->GetMaxCw();
   cwmin=edca->GetMinCw();
-  std::cout << "mincw" <<cwmin<<"maxcw"<<cwmax<< std::endl;
-
-  wifi_mac->GetAttribute ("BE_Txop", ptr);
-  edca = ptr.Get<QosTxop> ();
-  cwmax=edca->GetMaxCw();
-  cwmin=edca->GetMinCw();
-  std::cout << "mincw" <<cwmin<<"maxcw"<<cwmax<< std::endl;
-
-  wifi_mac->GetAttribute ("BK_Txop", ptr);
-  edca = ptr.Get<QosTxop> ();
-  cwmax=edca->GetMaxCw();
-  cwmin=edca->GetMinCw();
-  std::cout << "mincw" <<cwmin<<"maxcw"<<cwmax<< std::endl;*/
-  
-  
-  /*Ptr<NetDevice> dev = wifiStaNodes.Get (0)->GetDevice (0);
-  Ptr<WifiNetDevice> wifi_dev = DynamicCast<WifiNetDevice> (dev);
-  Ptr<WifiMac> wifi_mac = wifi_dev->GetMac ();
-  PointerValue ptr;
-  Ptr<QosTxop> edca;
-
-
-  dev = wifiStaNodes.Get (0)->GetDevice (0);
-  wifi_dev = DynamicCast<WifiNetDevice> (dev);
-  wifi_mac = wifi_dev->GetMac ();
-  wifi_mac->GetAttribute ("VI_Txop", ptr);
-  edca = ptr.Get<QosTxop> ();
-  edca->SetMaxCw(1024);
-  edca->SetMinCw(1024);
-  edca->SetTxopLimit (MicroSeconds (0));
-  uint32_t cwmax=edca->GetMaxCw();
-  uint32_t cwmin=edca->GetMinCw();
   std::cout << "mincw" <<cwmin<<"maxcw"<<cwmax<< std::endl;*/
 
-if (enablePcap)
-    {
-  phy.EnablePcap ("AP", apDevice.Get (0));
-    }
   Simulator::Stop (Seconds (simulationTime + 1));
   Simulator::Run ();
   Simulator::Destroy();
