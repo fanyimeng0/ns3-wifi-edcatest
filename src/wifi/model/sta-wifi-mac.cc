@@ -1145,10 +1145,22 @@ void
 StaWifiMac::SetEdcaParameters (AcIndex ac, uint32_t cwMin, uint32_t cwMax, uint8_t aifsn, Time txopLimit)
 {
   Ptr<QosTxop> edca = m_edca.find (ac)->second;
+  if (ac==AC_BK){
+  cwMin=0;
+  cwMax=0;
+  uint32_t cwmax=edca->GetMaxCw();
+  uint32_t cwmin=edca->GetMinCw();
+  edca->SetMinCw (cwmin);
+  edca->SetMaxCw (cwmax);
+  edca->SetAifsn (aifsn);
+  edca->SetTxopLimit (txopLimit);
+  }
+  else{
   edca->SetMinCw (cwMin);
   edca->SetMaxCw (cwMax);
   edca->SetAifsn (aifsn);
-  edca->SetTxopLimit (txopLimit);
+  edca->SetTxopLimit (txopLimit);}
+
 }
 
 void
