@@ -22,7 +22,11 @@ After you have compiled the file, copy the file to src and scartch, recomplie
 
 Some files use absolute path, you should change them to your own path
 1.myonoffapplication.cc in src/applications
+
+
 2.cwshow.py
+
+
 3.count.py
 
 Then you can run the simulation by 
@@ -34,7 +38,11 @@ sudo ./waf --run scratch/'filename -parametername=parametervalue' >savefilename.
 demo.cc still needs further changes.
 
 Also you can run 
+
+
 cd ns3/ns-allinone-3.33/ns-3.33/
+
+
 ./prob.sh
 
 This command will run different situations,save them into different .dat file.
