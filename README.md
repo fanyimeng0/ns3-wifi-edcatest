@@ -5,10 +5,11 @@ Table of Contents:
 
 1) How to use this code
 2) Main change in src file
-3) Result
+3)Result analysis
 
 1)How to use this code
 -------------------------
+This code is to simulate the relationship between contention window and transmitting performance  
 
 This code is based on ns-3.33,so you are recommended to download soure file
 from 
@@ -47,6 +48,35 @@ To analyse these results,we will use python to read these files.
 Than run cwshow.py,you will get the figure like .
 
 ![97efa123e7ecf21a80c7c066fc4b91e](https://user-images.githubusercontent.com/81957249/189030109-4a5f29ca-4141-48e0-96c0-4c08fc3c9899.png)
+
+2)Main change in src file
+-------------------------
+
+The main change concludes:  
+1)myonfoff application:
+Using a time list and packetsizelist to control the tranmitting rhythm.  
+![myonoffapplication](https://user-images.githubusercontent.com/81957249/189030742-2e9e6298-6c3d-4248-a0cf-48ae67315dd8.png)
+
+2)Cancel the cw changes is sta-wifi-mac.cc  
+
+3)Use mytag to sign special packet.  
+
+3)(Unfinished) Control algorithms in channel-access-manager.cc
+
+3)Result analysis
+-------------------------
+![2648cba2813fbe4e80d2ce527765dc3](https://user-images.githubusercontent.com/81957249/189031352-54689c26-ab72-45c6-ade1-b7bc8b7f04d6.png)
+
+For UDP,only 2 nodes contention
+
+![ea3ed140adf00b6b85e250ab0ce1321](https://user-images.githubusercontent.com/81957249/189031374-d4db04d8-538c-4b93-b873-3085f52ad467.png)
+
+For TCP,the ack packet will influence the channel.
+
+
+
+
+
 
 
 
