@@ -21,18 +21,14 @@ After you have compiled the file, copy the file to src and scartch, recomplie
 ./waf --config
 
 Some files use absolute path, you should change them to your own path
-1.myonoffapplication.cc in src/applications
-
-
-2.cwshow.py
-
-
-3.count.py
+1.myonoffapplication.cc in src/applications  
+2.cwshow.py  
+3.count.py  
 
 Then you can run the simulation by 
 
-cd ns3/ns-allinone-3.33/ns-3.33/
-sudo ./waf --run scratch/'filename -parametername=parametervalue' >savefilename.dat (--vis)
+cd ns3/ns-allinone-3.33/ns-3.33/  
+sudo ./waf --run scratch/'filename -parametername=parametervalue' >savefilename.dat (--vis)  
 (--vis) will show the figure by using pyviz.
 
 demo.cc still needs further changes.
