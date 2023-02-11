@@ -54,7 +54,7 @@ Than run cwshow.py,you will get the figure like .
 
 The main change concludes:  
 1)myonfoff application:
-Using a time list and packetsizelist to control the tranmitting rhythm.  
+Using a time list and packetsizelist to control the transmitting rhythm.  
 ![myonoffapplication](https://user-images.githubusercontent.com/81957249/189030742-2e9e6298-6c3d-4248-a0cf-48ae67315dd8.png)
 
 2)Cancel the cw changes is sta-wifi-mac.cc  
@@ -71,7 +71,7 @@ For UDP,only 2 nodes contention
 
 ![ea3ed140adf00b6b85e250ab0ce1321](https://user-images.githubusercontent.com/81957249/189031374-d4db04d8-538c-4b93-b873-3085f52ad467.png)
 
-For TCP,the ack packet will influence the channel.
+For TCP,the ack packet will influence the result.
 
 
 
