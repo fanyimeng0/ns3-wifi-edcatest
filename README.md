@@ -6,6 +6,7 @@ Table of Contents:
 1) How to use this code
 2) Main change in src file
 3) Result analysis
+4) Model1.0
 
 1)How to use this code
 -------------------------
@@ -72,6 +73,13 @@ For UDP,only 2 nodes contention
 ![ea3ed140adf00b6b85e250ab0ce1321](https://user-images.githubusercontent.com/81957249/189031374-d4db04d8-538c-4b93-b873-3085f52ad467.png)
 
 For TCP,the ack packet will influence the result.
+
+4)Model 1.0
+-------------------------
+This model contains three part to verify the model for CWvalue and transmitting opportunity.
+The code model10 changes CW value for different STAs.
+The code model11 tries to get the result for different AC in the same STA.
+The code model12 tries to get the result which combines different AC and AP, in this part, we capture the packet via different port number.
 
 
 
