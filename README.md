@@ -77,8 +77,11 @@ For TCP,the ack packet will influence the result.
 4)Model 1.0
 -------------------------
 This model contains three part to verify the model for CWvalue and transmitting opportunity.
+
 The code model10 changes CW value for different STAs.
+
 The code model11 tries to get the result for different AC in the same STA.
+
 The code model12 tries to get the result which combines different AC and AP, in this part, we capture the packet via different port number.
 
 
