@@ -30,6 +30,7 @@
 #include "ns3/udp-client-server-helper.h"
 #include "ns3/on-off-helper.h"
 #include "ns3/myon-off-helper.h"
+#include "ns3/poisson-helper.h"
 #include "ns3/yans-wifi-channel.h"
 #include "ns3/wifi-net-device.h"
 #include "ns3/qos-txop.h"
@@ -58,45 +59,46 @@ double m_phy1TxBegin = 0;
 double m_phy2TxBegin = 0;
 double m_phy3TxBegin = 0;
 double m_phy4TxBegin = 0;
-double m_VI=0;
-double m_BE=0;
-static void
-CalculateVI (Ptr<const Packet>packet,const Address &address)
-{
-   m_phy1TxBegin=m_phy1TxBegin+packet->GetSize();
-   m_VI=m_VI+1;
- 
-}
 
-static void
-CalculateBE (Ptr<const Packet>packet,const Address &address)
+void
+Tx1callback(Ptr<const Packet>packet,double energy)
 {
-    m_phy2TxBegin=m_phy2TxBegin+packet->GetSize();
-    m_BE=m_BE+1;
-    
+  Ptr<Packet> m_currentPacket;
+  WifiMacHeader hdr;
+  m_currentPacket = packet->Copy();
+  m_currentPacket->RemoveHeader (hdr);
+  if(hdr.IsData()){
+    m_phy1TxBegin=m_phy1TxBegin+packet->GetSize();
+    /*std::cout << "PHY TX :" << m_phyTxBegin << " " << std::endl;
+    std::cout << "GetAddr1 :" << hdr.GetAddr1() << " " << std::endl;
+    std::cout << "GetAddr2 :" << hdr.GetAddr2() << " " << std::endl;
+    std::cout << "type :" << hdr.GetTypeString() << std::endl;
+    std::cout << "Time: " << ns3::Simulator::Now()<< std::endl << std::endl;*/
+    //std::cout << "ack :" << hdr.IsAck() << std::endl;
+    //std::cout << "rts :" << hdr.IsRts() << std::endl;
+  }
 }
+static void
+CalculateDelayVI (Ptr<const Packet>p,const Address &address)
+{
+  TimestampTag timestamp;
+  p->FindFirstMatchingByteTag (timestamp);
+  Time tx = timestamp.GetTimestamp();
+  Time txdelay = Simulator::Now() - tx;
+  double delay = txdelay.ToDouble(Time::MS);
+  std::cout << "VIdelay: \t" << delay << std::endl;
 
+}
 
 void
 showresult()
 {
-   std::cout << "RadioVI: \t" << m_VI/(m_VI+m_BE) <<  std::endl;
-  std::cout << "RadioBE: \t" << m_BE/(m_VI+m_BE) <<  std::endl;
-  //std::cout << "Radio3: \t" << m_phy3TxBegin/(m_phy1TxBegin+m_phy2TxBegin+m_phy3TxBegin) <<  std::endl;
-  std::cout << "Throughput1: \t" << m_phy1TxBegin*8/1000000 <<  std::endl;
-  std::cout << "Throughput2: \t" << m_phy2TxBegin*8/1000000 <<  std::endl;
-  //std::cout << "Throughput3: \t" << m_phy3TxBegin*8/1000000 <<  std::endl;
 
-  //std::cout << "Drop1: \t" << m_drop1*8/1000000 <<  std::endl;
-  //std::cout << "Drop2: \t" << m_drop2*8/1000000 <<  std::endl;
-  
+  std::cout << "Throughput1: \t" << m_phy1TxBegin*8/1000000 <<  std::endl;
   
   
   m_phy1TxBegin=0;
-  m_phy2TxBegin=0;
-  m_phy3TxBegin=0;
-  m_BE=0;
-  m_VI=0;
+ 
   Time t = Simulator::Now();
   if(t.GetSeconds() <23)
 	{
@@ -110,8 +112,11 @@ int main (int argc, char *argv[])
 { 
 
   double simulationTime = 23; //seconds
+  double phymode = 0;
   CommandLine cmd (__FILE__);
   cmd.AddValue ("simulationTime", "Simulation time in seconds", simulationTime);
+  cmd.AddValue ("phymode","Phy mode", phymode);
+  
 
   cmd.Parse (argc, argv);
   uint8_t nWifi=4;
@@ -127,7 +132,34 @@ int main (int argc, char *argv[])
   WifiHelper wifi; //the default standard of 802.11a will be selected by this helper since the program doesn't specify another one
   wifi.SetStandard (WIFI_STANDARD_80211ax_5GHZ);
   WifiMacHelper mac;
-  wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager", "DataMode", StringValue ("HtMcs3"), "ControlMode", StringValue ("HtMcs3"));
+  wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager", "DataMode", StringValue ("HtMcs0"));//default
+  if (phymode==0){
+    wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager", "DataMode", StringValue ("VhtMcs0"));
+  }
+  if (phymode==1){
+    wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager", "DataMode", StringValue ("VhtMcs1"));
+  }
+  if (phymode==2){
+    wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager", "DataMode", StringValue ("VhtMcs2"));
+  }
+  if (phymode==3){
+    wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager", "DataMode", StringValue ("VhtMcs3"));
+  }
+  if (phymode==4){
+    wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager", "DataMode", StringValue ("VhtMcs4"));
+  }
+  if (phymode==5){
+    wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager", "DataMode", StringValue ("VhtMcs5"));
+  }
+  if (phymode==6){
+    wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager", "DataMode", StringValue ("VhtMcs6"));
+  }
+  if (phymode==7){
+    wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager", "DataMode", StringValue ("VhtMcs7"));
+  }
+  if (phymode==8){
+    wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager", "DataMode", StringValue ("VhtMcs8"));
+  }
   NetDeviceContainer staDevices,apDevice;
   Ssid ssid;
 
@@ -139,6 +171,7 @@ int main (int argc, char *argv[])
   phy.Set ("MaxSupportedRxSpatialStreams", UintegerValue (2));
   phy.Set ("ChannelWidth",UintegerValue (20));
   phy.Set("Frequency",UintegerValue (5180));
+  phy.Set("ShortPlcpPreambleSupported",BooleanValue (false));
   /*Qossupport for mac*/
   mac.SetType ("ns3::StaWifiMac",
                "QosSupported", BooleanValue (true),
@@ -181,8 +214,8 @@ int main (int argc, char *argv[])
 
   /* Setting applications */
   int32_t datarate_VO = 64000; //64kbps
-  uint32_t datarate_VI = 50000000; 
-  uint64_t datarate_BE = 50000000;
+  uint32_t datarate_VI = 6000000; 
+  uint64_t datarate_BE = 5000000;
   uint32_t datarate_BK = 50000000;
   uint32_t portVO = 9;
   uint32_t portVI = 10;
@@ -214,9 +247,8 @@ int main (int argc, char *argv[])
   serverBK.Start (Seconds (0.0));
   serverBK.Stop (Seconds (simulationTime + 1));
 
-  serverVI.Get(0)->TraceConnectWithoutContext("Rx", MakeCallback(&CalculateVI));
-  serverBE.Get(0)->TraceConnectWithoutContext("Rx", MakeCallback(&CalculateBE));
 
+  serverVI.Get(0)->TraceConnectWithoutContext("Rx", MakeCallback(&CalculateDelayVI));
   ApplicationContainer application1;
   ApplicationContainer application2;
   ApplicationContainer application3;
@@ -244,9 +276,22 @@ int main (int argc, char *argv[])
   onOffHelperVI.SetAttribute ("OffTime",  StringValue ("ns3::ConstantRandomVariable[Constant=0]"));
   onOffHelperVI.SetAttribute ("DataRate", DataRateValue (datarate_VI)); //64kbps voice
   onOffHelperVI.SetAttribute ("PacketSize", UintegerValue (1500)); //1500 bytes packe
+  //application2.Start(Seconds (3.0));
+  //application2.Stop(Seconds (23.0));
+  //application2.Add (onOffHelperVI.Install (wifiStaNodes.Get (0)));
+
+  /*MyOnOff application*/
+  PoissonHelper PoissonHelperVI ("ns3::UdpSocketFactory", sinkSocketVI);
+  PoissonHelperVI.SetAttribute ("OnTime",  StringValue ("ns3::ConstantRandomVariable[Constant=1]"));
+  PoissonHelperVI.SetAttribute ("OffTime",  StringValue ("ns3::ConstantRandomVariable[Constant=0]"));
+  PoissonHelperVI.SetAttribute ("DataRate", DataRateValue (datarate_VI)); 
+  PoissonHelperVI.SetAttribute ("PacketSize", UintegerValue (1500)); 
+  PoissonHelperVI.SetAttribute ("Interval", StringValue ("ns3::ExponentialRandomVariable[Mean=0.0025|Bound=0.0]")); 
+  application2.Add (PoissonHelperVI.Install (wifiStaNodes.Get (0)));
+
   application2.Start(Seconds (3.0));
-  application2.Stop(Seconds (23.0));
-  application2.Add (onOffHelperVI.Install (wifiStaNodes.Get (0)));
+  application2.Stop(Seconds (50.0));
+  
 
   OnOffHelper onOffHelperBE ("ns3::UdpSocketFactory", sinkSocketBE);
   onOffHelperBE.SetAttribute ("OnTime",  StringValue ("ns3::ConstantRandomVariable[Constant=1]"));
@@ -255,7 +300,6 @@ int main (int argc, char *argv[])
   onOffHelperBE.SetAttribute ("PacketSize", UintegerValue (1500)); //bytes
   application3.Start(Seconds (3.0));
   application3.Stop(Seconds (23.0));
-  application3.Add (onOffHelperBE.Install (wifiStaNodes.Get (1)));
     
   OnOffHelper onOffHelperBK ("ns3::UdpSocketFactory", sinkSocketBK);
   onOffHelperBK.SetAttribute ("OnTime",  StringValue ("ns3::ConstantRandomVariable[Constant=1]"));
@@ -264,46 +308,14 @@ int main (int argc, char *argv[])
   onOffHelperBK.SetAttribute ("PacketSize", UintegerValue (1500)); 
   application4.Start(Seconds (0.0));
   application4.Stop(Seconds (23.0));
- 
 
-  //Config::Set ("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Mac/$ns3::RegularWifiMac/BE_Txop/TxopLimit", TimeValue(MicroSeconds (0)));
-  //Config::Set ("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Mac/$ns3::RegularWifiMac/VI_Txop/TxopLimit", TimeValue(MicroSeconds (0)));
 
-  Config::Set ("/NodeList/1/DeviceList/*/$ns3::WifiNetDevice/Mac/$ns3::RegularWifiMac/BE_Txop/MinCw",  UintegerValue (15));
-  Config::Set ("/NodeList/1/DeviceList/*/$ns3::WifiNetDevice/Mac/$ns3::RegularWifiMac/BE_Txop/MaxCw",  UintegerValue (15));
-  
-  Config::Set ("/NodeList/0/DeviceList/*/$ns3::WifiNetDevice/Mac/$ns3::RegularWifiMac/VI_Txop/MaxCw",  UintegerValue (7));
-  Config::Set ("/NodeList/0/DeviceList/*/$ns3::WifiNetDevice/Mac/$ns3::RegularWifiMac/VI_Txop/MinCw",  UintegerValue (7));
+  Config::ConnectWithoutContext("/NodeList/0/DeviceList/*/$ns3::WifiNetDevice/Phy/PhyTxBegin",MakeCallback(&Tx1callback));
+
   if(1==1){
   Simulator::Schedule(Seconds(1), showresult);}
 
-//If necessary,you can show the cw window by this way
-  Ptr<NetDevice> dev = wifiStaNodes.Get (0)->GetDevice (0);
-  Ptr<WifiNetDevice> wifi_dev = DynamicCast<WifiNetDevice> (dev);
-  Ptr<WifiMac> wifi_mac = wifi_dev->GetMac ();
-  PointerValue ptr;
-  Ptr<QosTxop> edca;
 
-  
-
-  dev = wifiStaNodes.Get (0)->GetDevice (0);
-  wifi_dev = DynamicCast<WifiNetDevice> (dev);
-  wifi_mac = wifi_dev->GetMac ();
-  wifi_mac->GetAttribute ("D_Txop", ptr);
-  edca = ptr.Get<QosTxop> ();
-  
- 
-  uint32_t cwmin=edca->GetMinCw();
-  std::cout << "mincw" <<cwmin<< std::endl;
-
-  uint32_t aifsn=edca->GetAifsn();
-  std::cout << "aifsn" <<aifsn<< std::endl;
-
-  uint32_t txop=edca->GetTxopLimit().ToDouble(Time::MS);
-  std::cout << "txop" <<txop<< std::endl;
-
-
- 
   Simulator::Stop (Seconds (simulationTime + 1));
   Simulator::Run ();
   Simulator::Destroy();
