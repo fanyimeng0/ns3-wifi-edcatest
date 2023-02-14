@@ -58,6 +58,11 @@ The main change concludes:
 Using a time list and packetsizelist to control the transmitting rhythm.  
 ![myonoffapplication](https://user-images.githubusercontent.com/81957249/189030742-2e9e6298-6c3d-4248-a0cf-48ae67315dd8.png)
 
+2)poisson application:
+Using ns3::ExponentialRandomVariable to simulate the packet which follows a poisson distribution by adding attribute interval, this part referees 
+
+https://blog.csdn.net/u014565333/article/details/52761589?tdsourcetag=s_pctim_aiomsg
+
 2)Cancel the cw changes is sta-wifi-mac.cc  
 
 3)Use mytag to sign special packet.  
