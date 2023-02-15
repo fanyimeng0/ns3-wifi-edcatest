@@ -7,6 +7,7 @@ Table of Contents:
 2) Main change in src file
 3) Result analysis
 4) Model1.0
+5) Model2.0
 
 1)How to use this code
 -------------------------
@@ -88,6 +89,12 @@ The code model10 changes CW value for different STAs.
 The code model11 tries to get the result for different AC in the same STA.
 
 The code model12 tries to get the result which combines different AC and AP, in this part, we capture the packet via different port number.
+
+5)Model 2.0
+-------------------------
+Model 2 is used to verify the delay by using Pollaczek–Khintchine (PK) formula.
+![Figure_2](https://user-images.githubusercontent.com/81957249/218975411-ababe30a-ae8a-46f9-a190-a4556d743a30.png)
+
 
 
 
