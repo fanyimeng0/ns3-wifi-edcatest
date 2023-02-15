@@ -79,6 +79,14 @@ Tx1callback(Ptr<const Packet>packet,double energy)
   }
 }
 static void
+CalculateBE (Ptr<const Packet>packet,const Address &address)
+{
+    m_phy2TxBegin=m_phy2TxBegin+packet->GetSize();
+    
+}
+
+
+static void
 CalculateDelayVI (Ptr<const Packet>p,const Address &address)
 {
   TimestampTag timestamp;
@@ -94,10 +102,14 @@ void
 showresult()
 {
 
+  std::cout << "RadioVI: \t" << m_phy1TxBegin/(m_phy1TxBegin+m_phy2TxBegin) <<  std::endl;
+  std::cout << "RadioBE: \t" << m_phy2TxBegin/(m_phy1TxBegin+m_phy2TxBegin) <<  std::endl;
+  //std::cout << "Radio3: \t" << m_phy3TxBegin/(m_phy1TxBegin+m_phy2TxBegin+m_phy3TxBegin) <<  std::endl;
   std::cout << "Throughput1: \t" << m_phy1TxBegin*8/1000000 <<  std::endl;
-  
-  
+
   m_phy1TxBegin=0;
+  m_phy2TxBegin=0;
+  
  
   Time t = Simulator::Now();
   if(t.GetSeconds() <23)
@@ -249,6 +261,7 @@ int main (int argc, char *argv[])
 
 
   serverVI.Get(0)->TraceConnectWithoutContext("Rx", MakeCallback(&CalculateDelayVI));
+  serverBE.Get(0)->TraceConnectWithoutContext("Rx", MakeCallback(&CalculateBE));
   ApplicationContainer application1;
   ApplicationContainer application2;
   ApplicationContainer application3;
@@ -298,6 +311,8 @@ int main (int argc, char *argv[])
   onOffHelperBE.SetAttribute ("OffTime",  StringValue ("ns3::ConstantRandomVariable[Constant=0]"));
   onOffHelperBE.SetAttribute ("DataRate", DataRateValue (datarate_BE));
   onOffHelperBE.SetAttribute ("PacketSize", UintegerValue (1500)); //bytes
+  application3.Add (onOffHelperBE.Install (wifiStaNodes.Get (0)));
+  application3.Add (onOffHelperBE.Install (wifiStaNodes.Get (1)));
   application3.Start(Seconds (3.0));
   application3.Stop(Seconds (23.0));
     
