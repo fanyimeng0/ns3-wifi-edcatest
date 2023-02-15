@@ -93,7 +93,9 @@ The code model12 tries to get the result which combines different AC and AP, in 
 5)Model 2.0
 -------------------------
 Model 2 is used to verify the delay by using Pollaczek–Khintchine (PK) formula.
-![Figure_2](https://user-images.githubusercontent.com/81957249/218975411-ababe30a-ae8a-46f9-a190-a4556d743a30.png)
+![Figure_2](https://user-images.githubusercontent.com/81957249/218977266-ef66e375-6162-47d3-8904-8097ecc1e0b6.png)
+
+
 
 
 
